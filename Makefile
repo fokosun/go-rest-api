@@ -21,7 +21,7 @@ docker_push_image:
 	@docker push fokosun/cookbookshq-api:v1
 
 tests: ## Run the entire test suites
-	@php vendor/bin/phpunit tests/
+	./run_tests.sh
 
 up: ## Restarts and provisions the containers in the background
 	@docker-compose up -d
@@ -36,6 +36,3 @@ prune_containers: ## Remove the containers
 
 prune_volumes: ## Removes dangling volumes
 	@docker volume prune
-
-static_analysis:
-	@php ./vendor/bin/phpstan analyse --memory-limit=2G
