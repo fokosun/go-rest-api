@@ -1,0 +1,12 @@
+# Binaries
+main
+
+# Vendor
+vendor/
+
+# Temporary files
+*.log
+*.out
+
+# OS-specific files
+.DS_Store
