@@ -3,6 +3,7 @@ version: '3.8'
 services:
   app:
     image: fokosun/go-rest-api:latest
+    container_name: app
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,17 +12,26 @@ services:
     volumes:
       - .:/app
     command: ["sh", "-c", "go mod tidy && go build -o main . && ./main"]
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=root
+      - DB_PASSWORD=pass
+      - DB_NAME=books_store
     depends_on:
       - db
 
   db:
     image: postgres:13
+    ports:
+      - "5432:5432"
+    container_name: db
     volumes:
       - db-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: books_store
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: pass
 
 volumes:
   db-data:

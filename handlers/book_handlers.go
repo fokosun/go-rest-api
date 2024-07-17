@@ -4,54 +4,57 @@ import (
 	"net/http"
 
 	"github.com/fokosun/go-rest-api/models"
+	"github.com/fokosun/go-rest-api/config"
 	"github.com/gin-gonic/gin"
 )
 
-var books = []models.Book{
-	{ID: "1", Title: "1984", Author: "George Orwell"},
-	{ID: "2", Title: "Brave New World", Author: "Aldous Huxley"},
-}
+// var books = []models.Book{}
 
 func GetBooks(c *gin.Context) {
-	c.JSON(http.StatusOK, books)
+	var books = []models.Book{}
+    config.DB.Find(&books)
+    c.JSON(http.StatusOK, books)
 }
 
 func GetBookByID(c *gin.Context) {
-	id := c.Param("id")
-	for _, book := range books {
-		if book.ID == id {
-			c.JSON(http.StatusOK, book)
-			return
-		}
-	}
-	c.JSON(http.StatusNotFound, gin.H{"message": "book not found"})
+	var book models.Book
+    if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+        return
+    }
+    c.JSON(http.StatusOK, book)
 }
 
 func CreateBook(c *gin.Context) {
-	var newBook models.Book
-	if err := c.BindJSON(&newBook); err != nil {
-		return
-	}
-	books = append(books, newBook)
-	c.JSON(http.StatusCreated, newBook)
+	var book models.Book
+    if err := c.ShouldBindJSON(&book); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    config.DB.Create(&book)
+    c.JSON(http.StatusCreated, book)
 }
 
 func EditBook(c *gin.Context) {
-	var newBook models.Book
-	if err := c.BindJSON(&newBook); err != nil {
-		return
-	}
-	books = append(books, newBook)
-	c.JSON(http.StatusCreated, newBook)
+	var book models.Book
+    if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+        return
+    }
+    if err := c.ShouldBindJSON(&book); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    config.DB.Save(&book)
+    c.JSON(http.StatusOK, book)
 }
 
 func DeleteBook(c *gin.Context) {
-	//find the book first
-	//statusnotfound if not found
-	//delete
-
-	// id := c.Param("id")
-	// c.JSON(http.StatusNotFound, gin.H{"message": "book not found", "ID": id})
-
-	c.JSON(http.StatusNoContent, gin.H{"message": "book deleted"})
+	var book models.Book
+    if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+        return
+    }
+    config.DB.Delete(&book)
+    c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})
 }
