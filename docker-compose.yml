@@ -2,20 +2,19 @@ version: '3.8'
 
 services:
   app:
-    container_name: api
     image: fokosun/go-rest-api:latest
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      - ENV_VAR=example_value
+    volumes:
+      - .:/app
+    command: ["sh", "-c", "go mod tidy && go build -o main . && ./main"]
     depends_on:
       - db
 
   db:
-    container_name: db
     image: postgres:13
     volumes:
       - db-data:/var/lib/postgresql/data

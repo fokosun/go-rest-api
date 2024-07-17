@@ -1,0 +1,7 @@
+version: '3.8'
+
+services:
+  app:
+    volumes:
+      - .:/app
+    command: reflex -r '\.go$' -s -- sh -c "go mod tidy && go build -o main . && ./main"
