@@ -35,3 +35,23 @@ func CreateBook(c *gin.Context) {
 	books = append(books, newBook)
 	c.JSON(http.StatusCreated, newBook)
 }
+
+func EditBook(c *gin.Context) {
+	var newBook models.Book
+	if err := c.BindJSON(&newBook); err != nil {
+		return
+	}
+	books = append(books, newBook)
+	c.JSON(http.StatusCreated, newBook)
+}
+
+func DeleteBook(c *gin.Context) {
+	//find the book first
+	//statusnotfound if not found
+	//delete
+
+	// id := c.Param("id")
+	// c.JSON(http.StatusNotFound, gin.H{"message": "book not found", "ID": id})
+
+	c.JSON(http.StatusNoContent, gin.H{"message": "book deleted"})
+}
