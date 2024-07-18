@@ -2,10 +2,11 @@ package auth
 
 import (
     "github.com/golang-jwt/jwt/v4"
+	"os"
     "time"
 )
 
-var jwtKey = []byte("my_secret_key")
+var jwtKey = []byte(os.Getenv("jwt-secret"))
 
 type Claims struct {
     Email string `json:"email"`

@@ -26,3 +26,4 @@ EXPOSE 8080
 CMD ["reflex", "-r", "\\.go$", "-s", "--", "sh", "-c", "go mod tidy && go build -o main . && ./main"]
 
 ENV ENV=development
+ENV jwt-secret=watermelonsugarhigh
