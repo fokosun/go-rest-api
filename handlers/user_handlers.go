@@ -25,7 +25,6 @@ func GetUserByID(c *gin.Context) {
 
 func CreateUser(c *gin.Context) {
 	var user models.User
-	password := c.Query("password")
 
 	// Bind the JSON input to the struct
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -33,17 +32,16 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	err := user.SetPassword(password)
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"password_error": err.Error()})
-		return
-    }
-
 	// Validate the user
-    err = user.Validate()
+    err := user.Validate()
     if err != nil {
         c.JSON(http.StatusNotFound, gin.H{"validation_error": err.Error()})
 		return
+    }
+
+	if err = user.SetPassword(user.Password); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
     }
 
 	// Save the user to the database

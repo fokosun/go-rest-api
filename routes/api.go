@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"os"
 	"github.com/fokosun/go-rest-api/handlers"
 	"github.com/gin-gonic/gin"
 )
@@ -8,33 +9,43 @@ import (
 func SetupRouter() *gin.Engine {
 	router := gin.Default()
 
+	env := os.Getenv("ENV")
+
+	if env == "development" {
+	// Trust all proxies (not recommended for production)
+		err := router.SetTrustedProxies(nil)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	// Auth Routes
 	auth := router.Group("/auth")
-    {
-        auth.POST("/login", handlers.Login)
-        // auth.POST("/logout", handlers.Logout)
-        // auth.POST("/invalidate-token", handlers.InvalidateToken)
-    }
+	{
+		auth.POST("/login", handlers.Login)
+		// auth.POST("/logout", handlers.Logout)
+		// auth.POST("/invalidate-token", handlers.InvalidateToken)
+	}
 
 	// Users Routes
 	users := router.Group("/users")
-    {
-        users.GET("/", handlers.GetUsers)
-        users.GET("/:id", handlers.GetUserByID)
-        users.POST("/", handlers.CreateUser)
-        users.PUT("/:id", handlers.UpdateUser)
-        users.DELETE("/:id", handlers.DeleteUser)
-    }
+	{
+		users.GET("/", handlers.GetUsers)
+		users.GET("/:id", handlers.GetUserByID)
+		users.POST("/", handlers.CreateUser)
+		users.PUT("/:id", handlers.UpdateUser)
+		users.DELETE("/:id", handlers.DeleteUser)
+	}
 
 	// Authors Routes
 	// authors := router.Group("/authors")
-    // {
-    //     authors.GET("/", handlers.GetAuthors)
-    //     authors.GET("/:id", handlers.GetAuthorByID)
-    //     authors.POST("/", handlers.CreateAuthor)
-    //     authors.PUT("/:id", handlers.EditAuthor)
-    //     authors.DELETE("/:id", handlers.DeleteAuthor)
-    // }
+	// {
+	//     authors.GET("/", handlers.GetAuthors)
+	//     authors.GET("/:id", handlers.GetAuthorByID)
+	//     authors.POST("/", handlers.CreateAuthor)
+	//     authors.PUT("/:id", handlers.EditAuthor)
+	//     authors.DELETE("/:id", handlers.DeleteAuthor)
+	// }
 
 	// Books Routes
 	books := router.Group("/books")

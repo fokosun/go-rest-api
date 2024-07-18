@@ -12,7 +12,7 @@ type User struct {
 	Firstname    string `json:"firstname" validate:"required"`
 	Lastname     string `json:"lastname" validate:"required"`
 	Email        string `json:"email" gorm:"unique;not null" validate:"required,email"`
-	Password     string `gorm:"-"`
+	Password     string `json:"password,omitempty" validate:"required" gorm:"-"`        
 	PasswordHash string `gorm:"not null"`
 }
 
