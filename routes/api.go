@@ -1,26 +1,12 @@
 package routes
 
 import (
-	"os"
-
 	"github.com/fokosun/go-rest-api/handlers"
 	"github.com/fokosun/go-rest-api/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter() *gin.Engine {
-	router := gin.Default()
-
-	env := os.Getenv("ENV")
-
-	if env == "development" {
-		// Trust all proxies (not recommended for production)
-		err := router.SetTrustedProxies(nil)
-		if err != nil {
-			panic(err)
-		}
-	}
-
+func SetupApiRouter(router *gin.Engine) {
 	// Auth Routes
 	auth := router.Group("/auth")
 	{
@@ -57,10 +43,8 @@ func SetupRouter() *gin.Engine {
 		//Ratings
 		// books.GET("/ratings", handlers.GetRatings)
 		// books.GET("/ratings/:id", handlers.GetRatingByBookID)
-		// books.POST("/ratings", handlers.CreateRating)
+		books.POST("/:id/ratings", handlers.CreateRating)
 		// books.PUT("/ratings/:id", handlers.EditRating)
 		// books.DELETE("/ratings/:id", handlers.DeleteRating)
 	}
-
-	return router
 }
