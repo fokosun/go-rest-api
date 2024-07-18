@@ -29,7 +29,6 @@ func CreateBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// book.AuthorID = 3
 	config.DB.Create(&book)
 	c.JSON(http.StatusCreated, book)
 }

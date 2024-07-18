@@ -40,11 +40,10 @@ func SetupApiRouter(router *gin.Engine) {
 		books.PUT("/:id", handlers.EditBook)
 		books.DELETE("/:id", handlers.DeleteBook)
 
-		//Ratings
-		// books.GET("/ratings", handlers.GetRatings)
-		// books.GET("/ratings/:id", handlers.GetRatingByBookID)
-		books.POST("/:id/ratings", handlers.CreateRating)
-		// books.PUT("/ratings/:id", handlers.EditRating)
-		// books.DELETE("/ratings/:id", handlers.DeleteRating)
+		// Ratings
+		books.GET("/ratings", handlers.GetRatings)
+		books.GET("/:id/ratings", handlers.GetRatingsByBookID)
+		books.POST("/:id/ratings", handlers.CreateOrUpdateRating)
+		books.PUT("/:id/ratings", handlers.CreateOrUpdateRating)
 	}
 }

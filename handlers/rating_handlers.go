@@ -10,8 +10,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateRating(c *gin.Context) {
-	fmt.Printf("Params %v\n", c.Query("comment"))
+func GetRatings(c *gin.Context) {
+	ratings := []models.Rating{}
+	config.DB.Find(&ratings)
+	c.JSON(http.StatusOK, ratings)
+
+}
+
+func GetRatingsByBookID(c *gin.Context) {
+	ratings := []models.Rating{}
+	if err := config.DB.Where("book_id = ?", c.Param("id")).Find(&ratings).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "There was an error processing this request. Please try again."})
+		return
+	}
+	c.JSON(http.StatusOK, ratings)
+}
+
+func CreateOrUpdateRating(c *gin.Context) {
 	var rating models.Rating
 	var book models.Book
 	var user models.User
@@ -30,7 +45,7 @@ func CreateRating(c *gin.Context) {
 	}
 
 	// If Rating dont exists create new
-	if err := config.DB.Where(&models.Rating{BookID:bookID, UserID: user.ID}).First(&rating).Error; err != nil {
+	if err := config.DB.Where(&models.Rating{BookID: bookID, UserID: user.ID}).First(&rating).Error; err != nil {
 		fmt.Printf("Creating new Rating")
 
 		// Bind the JSON input to the struct
@@ -45,13 +60,13 @@ func CreateRating(c *gin.Context) {
 			return
 		}
 
-		//set the book id from gin context
+		// set the book id from gin context
 		if err := rating.SetBookID(bookID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		//set the user id from gin context
+		// set the user id from gin context
 		if err := rating.SetUserID(user.ID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
