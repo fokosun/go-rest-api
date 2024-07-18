@@ -31,26 +31,22 @@ func SetupRouter() *gin.Engine {
 	router.POST("/register", handlers.CreateUser)
 
 	// Users Routes
-	users := router.Group("/users").Use(middlewares.Api())
+	users := router.Group("/users").Use(middlewares.AuthMiddleware())
 	{
 		users.GET("/", handlers.GetUsers)
 		users.GET("/:id", handlers.GetUserByID)
 		users.PUT("/:id", handlers.UpdateUser)
 		users.DELETE("/:id", handlers.DeleteUser)
 
-		// Authors Routes
-		// authors := router.Group("/authors")
-		// {
-		// 	authors.GET("/", handlers.GetAuthors)
-		// 	authors.GET("/:id", handlers.GetAuthorByID)
-		// 	authors.POST("/", handlers.CreateAuthor)
-		// 	authors.PUT("/:id", handlers.EditAuthor)
-		// 	authors.DELETE("/:id", handlers.DeleteAuthor)
-		// }
+		// A user i.e reader can create/view/update an author
+		users.POST("/authors", handlers.CreateAuthor)
+		users.GET("/authors", handlers.GetAuthors)
+		users.GET("/authors/:id", handlers.GetAuthor)
+		users.PUT("/authors/:id", handlers.EditAuthor)
 	}
 
 	// Books Routes
-	books := router.Group("/books").Use(middlewares.Api())
+	books := router.Group("/books").Use(middlewares.AuthMiddleware())
 	{
 		books.GET("/", handlers.GetBooks)
 		books.GET("/:id", handlers.GetBookByID)

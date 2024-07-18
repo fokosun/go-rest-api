@@ -16,7 +16,7 @@ type Claims struct {
     jwt.RegisteredClaims
 }
 
-func Api() gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         authHeader := c.GetHeader("Authorization")
         if authHeader == "" {
