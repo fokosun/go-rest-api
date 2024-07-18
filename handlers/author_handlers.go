@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var author models.Author
-var user models.User
-
 func CreateAuthor(c *gin.Context) {
+	var author models.Author
+	var user models.User
+
 	// Bind the JSON input to the struct
 	if err := c.ShouldBindJSON(&author); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -63,6 +63,7 @@ func GetAuthor(c *gin.Context) {
 
 func EditAuthor(c *gin.Context) {
 	var author models.Author
+	var user models.User
 	if err := config.DB.First(&author, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return

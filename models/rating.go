@@ -1,19 +1,19 @@
 package models
 
-import (
-	"github.com/go-playground/validator/v10"
-)
-
 type Rating struct {
 	ID      uint `gorm:"primaryKey"`
-	UserID  int
-	BookID  int `json:"book_id" validate:"required"`
-	Rating  int `gorm:"default:1"`
-	Comment string `json:"title"`
+	UserID  uint
+	BookID  int
+	Rating  int    `json:"rating" gorm:"default:1"`
+	Comment string `json:"comment"`
 }
 
-// Validate validates the Rating fields.
-func (u *Rating) Validate() error {
-	validate := validator.New()
-	return validate.Struct(u)
+func (r *Rating) SetBookID(bookID int) error {
+	r.BookID = bookID
+	return nil
+}
+
+func (r *Rating) SetUserID(userID uint) error {
+	r.UserID = userID
+	return nil
 }

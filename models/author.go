@@ -12,7 +12,6 @@ type Author struct {
 	Gravatar  string `json:"gravatar"`
 	CreatedBy uint
 	UpdatedBy uint
-	Books     []Book `gorm:"foreignKey:AuthorID"`
 }
 
 func (a *Author) SetCreatedBy(userId uint) error {
