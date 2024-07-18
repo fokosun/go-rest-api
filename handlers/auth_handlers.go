@@ -1,12 +1,11 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/fokosun/go-rest-api/models"
-	"github.com/fokosun/go-rest-api/config"
 	"github.com/fokosun/go-rest-api/auth"
+	"github.com/fokosun/go-rest-api/config"
+	"github.com/fokosun/go-rest-api/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -39,12 +38,4 @@ func Login(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
-}
-
-func Logout(c *gin.Context) {
-	fmt.Printf("Logout")
-}
-
-func InvalidateToken(c *gin.Context) {
-	fmt.Printf("Invalidate Token")
 }
