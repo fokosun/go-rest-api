@@ -25,12 +25,35 @@ func GetUserByID(c *gin.Context) {
 
 func CreateUser(c *gin.Context) {
 	var user models.User
+	password := c.Query("password")
+
+	// Bind the JSON input to the struct
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	config.DB.Create(&user)
-	c.JSON(http.StatusCreated, user)
+
+	err := user.SetPassword(password)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"password_error": err.Error()})
+		return
+    }
+
+	// Validate the user
+    err = user.Validate()
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"validation_error": err.Error()})
+		return
+    }
+
+	// Save the user to the database
+    result := config.DB.Create(&user)
+    if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error creating user:":result.Error})
+        return
+    }
+
+	c.JSON(http.StatusOK, user)
 }
 
 func UpdateUser(c *gin.Context) {
