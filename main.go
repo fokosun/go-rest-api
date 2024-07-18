@@ -7,9 +7,21 @@ import (
 )
 
 func main() {
-	config.ConnectDatabase()
-	config.DB.AutoMigrate(&models.Book{})
+	Init()
 
 	router := routes.SetupRouter()
 	router.Run(":8080")
+}
+
+func Init() {
+	config.ConnectDatabase()
+	db := config.DB
+
+	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Author{})
+	db.AutoMigrate(&models.Book{})
+	db.AutoMigrate(&models.Rating{})
+
+	// Add check constraint for Rating field
+	db.Exec("ALTER TABLE ratings ADD CONSTRAINT check_rating CHECK (rating IN (1, 2, 3, 4, 5))")
 }

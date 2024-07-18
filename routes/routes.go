@@ -1,18 +1,49 @@
 package routes
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/fokosun/go-rest-api/handlers"
+	"github.com/fokosun/go-rest-api/handlers"
+	"github.com/gin-gonic/gin"
 )
 
 func SetupRouter() *gin.Engine {
-    router := gin.Default()
+	router := gin.Default()
 
-    router.GET("/books", handlers.GetBooks)
-    router.GET("/books/:id", handlers.GetBookByID)
-    router.POST("/books", handlers.CreateBook)
-	router.PUT("/books/:id", handlers.EditBook)
-	router.DELETE("/books/:id", handlers.DeleteBook)
+	// Users Routes
+	users := router.Group("/users")
+    {
+        users.GET("/", handlers.GetUsers)
+        users.GET("/:id", handlers.GetUserByID)
+        users.POST("/", handlers.CreateUser)
+        users.PUT("/:id", handlers.UpdateUser)
+        users.DELETE("/:id", handlers.DeleteUser)
+    }
 
-    return router
+	// Authors Routes
+	// authors := router.Group("/authors")
+    // {
+    //     authors.GET("/", handlers.GetAuthors)
+    //     authors.GET("/:id", handlers.GetAuthorByID)
+    //     authors.POST("/", handlers.CreateAuthor)
+    //     authors.PUT("/:id", handlers.EditAuthor)
+    //     authors.DELETE("/:id", handlers.DeleteAuthor)
+    // }
+
+	// Books Routes
+	books := router.Group("/books")
+	{
+		books.GET("/", handlers.GetBooks)
+		books.GET("/:id", handlers.GetBookByID)
+		books.POST("/", handlers.CreateBook)
+		books.PUT("/:id", handlers.EditBook)
+		books.DELETE("/:id", handlers.DeleteBook)
+
+		//Ratings
+		// books.GET("/ratings", handlers.GetRatings)
+		// books.GET("/ratings/:id", handlers.GetRatingByBookID)
+		// books.POST("/ratings", handlers.CreateRating)
+		// books.PUT("/ratings/:id", handlers.EditRating)
+		// books.DELETE("/ratings/:id", handlers.DeleteRating)
+	}
+
+	return router
 }
