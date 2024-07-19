@@ -19,7 +19,7 @@ func SetupApiRouter(router *gin.Engine) {
 	// Users Routes
 	users := router.Group("/users").Use(middlewares.AuthMiddleware())
 	{
-		users.GET("/", handlers.GetUsers)
+		users.GET("", handlers.GetUsers)
 		users.GET("/:id", handlers.GetUserByID)
 		users.PUT("/:id", handlers.UpdateUser)
 		users.DELETE("/:id", handlers.DeleteUser)
