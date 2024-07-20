@@ -43,6 +43,13 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	// Validate the password length
+	minLength := 8
+	if !ValidatePassword(user.Password, minLength) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Password must be at least 8 characters long"})
+		return
+	}
+
 	if err = user.SetPassword(user.Password); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

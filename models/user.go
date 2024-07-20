@@ -12,7 +12,7 @@ type User struct {
 	Firstname    string `json:"firstname" validate:"required"`
 	Lastname     string `json:"lastname" validate:"required"`
 	Email        string `json:"email" gorm:"unique;not null" validate:"required,email"`
-	Password     string `json:"password,omitempty" validate:"required" gorm:"-"`        
+	Password     string `json:"password,omitempty" validate:"required" gorm:"-"`
 	PasswordHash string `gorm:"not null"`
 }
 
@@ -29,6 +29,11 @@ func (u *User) SetPassword(password string) error {
 func (u *User) CheckPassword(password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password))
 	return err == nil
+}
+
+// ValidatePassword checks if the password meets the minimum length requirement
+func ValidatePassword(password string, minLength int) bool {
+	return len(password) >= minLength
 }
 
 // Validate validates the User fields.

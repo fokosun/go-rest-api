@@ -8,7 +8,7 @@ import (
 
 type Book struct {
 	gorm.Model
-	Title  string `json:"title"`
-	Isbn string `json:"isbn"`
+	Title    string `json:"title"`
+	Isbn     string `json:"isbn"`
 	AuthorID sql.NullInt64
 }
