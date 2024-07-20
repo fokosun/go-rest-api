@@ -21,7 +21,7 @@ func GetUsers(c *gin.Context) {
 func GetUserByID(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "User not found."})
 		return
 	}
 	c.JSON(http.StatusOK, user)
@@ -39,7 +39,7 @@ func CreateUser(c *gin.Context) {
 	// Validate the user
 	err := user.Validate()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 
