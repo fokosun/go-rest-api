@@ -32,7 +32,7 @@ func (u *User) CheckPassword(password string) bool {
 }
 
 // ValidatePassword checks if the password meets the minimum length requirement
-func ValidatePassword(password string, minLength int) bool {
+func (u *User) ValidatePassword(password string, minLength int) bool {
 	return len(password) >= minLength
 }
 

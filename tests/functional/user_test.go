@@ -337,6 +337,50 @@ func TestRegisterUserFailsIfPasswordValidationFailsIsRequired(t *testing.T) {
 	assert.Equal(t, "Key: 'User.Password' Error:Field validation for 'Password' failed on the 'required' tag", errorResponse.Message)
 }
 
+func TestRegisterUserFailsIfPasswordValidationFailsIsLessThanMinLen(t *testing.T) {
+	requestData := RegisterRequest{
+		Firstname: "Fisher",
+		Lastname:  "Trimii",
+		Email:     "user@test.com",
+		Password:  "less",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		fmt.Printf("Panic attack: %v\n", err)
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/register"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body
+	var errorResponse *handlers.ErrorResponse
+	err = json.Unmarshal(bodyBytes, &errorResponse)
+	assert.NoError(t, err)
+
+	// Assert that the error message is as expected
+	assert.Equal(t, "Password must be at least 8 characters long.", errorResponse.Message)
+}
+
 func TestGetUsersSucceeds(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/users", nil)
 	router.ServeHTTP(w, req)
