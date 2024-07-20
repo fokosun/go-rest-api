@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
 func GetUsers(c *gin.Context) {
 	users := []models.User{}
 	config.DB.Find(&users)
@@ -33,23 +37,23 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// Validate the user
-    err := user.Validate()
-    if err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"validation_error": err.Error()})
+	err := user.Validate()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"validation_error": err.Error()})
 		return
-    }
+	}
 
 	if err = user.SetPassword(user.Password); err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
 	// Save the user to the database
-    result := config.DB.Create(&user)
-    if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error creating user:":result.Error})
-        return
-    }
+	result := config.DB.Create(&user)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "User already exists."})
+		return
+	}
 
 	c.JSON(http.StatusOK, user)
 }

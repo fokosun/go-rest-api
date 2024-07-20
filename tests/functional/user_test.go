@@ -3,12 +3,15 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/fokosun/go-rest-api/config"
+	"github.com/fokosun/go-rest-api/handlers"
 	"github.com/fokosun/go-rest-api/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -16,13 +19,6 @@ import (
 
 var router *gin.Engine
 var w *httptest.ResponseRecorder
-
-type RegisterRequest struct {
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-}
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
@@ -47,11 +43,18 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestRegisterUserFailsIfValidationFails(t *testing.T) {
+type RegisterRequest struct {
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+}
+
+func TestRegistrationSucceedsIfUserDoesNotExistAlready(t *testing.T) {
 	requestData := RegisterRequest{
 		Firstname: "exampleUser",
 		Lastname:  "test",
-		Email:     "user+1@example.com",
+		Email:     "user@test.com",
 		Password:  "examplePass",
 	}
 
@@ -65,22 +68,57 @@ func TestRegisterUserFailsIfValidationFails(t *testing.T) {
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
+
 	if err != nil {
 		panic(err)
 	}
 
-	// Set the content type to application/json
-	req.Header.Set("Content-Type", "application/json")
-
-	// Use http.Client to send the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestRegisterUserFailsIfUserAlreadyExists(t *testing.T) {
+	requestData := RegisterRequest{
+		Firstname: "exampleUser",
+		Lastname:  "test",
+		Email:     "user@test.com",
+		Password:  "newExamplePass",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/register"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body
+	var errorResponse *handlers.ErrorResponse
+	err = json.Unmarshal(bodyBytes, &errorResponse)
+	assert.NoError(t, err)
+
+	// Assert that the error message is as expected
+	assert.Equal(t, "User already exists.", errorResponse.Message)
 }
 
 func TestGetUsersSucceeds(t *testing.T) {
