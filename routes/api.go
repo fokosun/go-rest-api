@@ -14,7 +14,7 @@ func SetupApiRouter(router *gin.Engine) {
 	}
 
 	// Register a new user
-	router.POST("/register", handlers.CreateUser)
+	router.POST("/register", handlers.RegisterUser)
 
 	// Users Routes
 	users := router.Group("/users").Use(middlewares.AuthMiddleware())

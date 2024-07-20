@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
@@ -40,4 +42,18 @@ func (u *User) ValidatePassword(password string, minLength int) bool {
 func (u *User) Validate() error {
 	validate := validator.New()
 	return validate.Struct(u)
+}
+
+// BeforeUpdate is a GORM hook that prevents the email field from being updated
+func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
+	var oldUser User
+	if err := tx.First(&oldUser, u.ID).Error; err != nil {
+		return err
+	}
+
+	if u.Email != oldUser.Email {
+		return errors.New("email field cannot be updated")
+	}
+
+	return nil
 }

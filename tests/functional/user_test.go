@@ -270,7 +270,7 @@ func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
 	requestData := RegisterRequest{
 		Firstname: "exampleUser",
 		Lastname:  "test",
-		Email:     "user@test.com",
+		Email:     "user+1@test.com",
 		Password:  "examplePass",
 	}
 
