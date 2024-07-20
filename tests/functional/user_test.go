@@ -1,13 +1,14 @@
 package tests
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
 	"github.com/fokosun/go-rest-api/config"
-	"github.com/fokosun/go-rest-api/models"
 	"github.com/fokosun/go-rest-api/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,13 @@ import (
 
 var router *gin.Engine
 var w *httptest.ResponseRecorder
+
+type RegisterRequest struct {
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+}
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
@@ -26,12 +34,6 @@ func TestMain(m *testing.M) {
 	os.Setenv("DB_PORT", "5432")
 
 	config.ConnectDatabase()
-	db := config.DB
-
-	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.Author{})
-	db.AutoMigrate(&models.Book{})
-	db.AutoMigrate(&models.Rating{})
 
 	router = routes.SetupRouter()
 	w = httptest.NewRecorder()
@@ -46,7 +48,39 @@ func TestMain(m *testing.M) {
 }
 
 func TestRegisterUserFailsIfValidationFails(t *testing.T) {
+	requestData := RegisterRequest{
+		Firstname: "exampleUser",
+		Lastname:  "test",
+		Email:     "user+1@example.com",
+		Password:  "examplePass",
+	}
 
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/register"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		panic(err)
+	}
+
+	// Set the content type to application/json
+	req.Header.Set("Content-Type", "application/json")
+
+	// Use http.Client to send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestGetUsersSucceeds(t *testing.T) {
