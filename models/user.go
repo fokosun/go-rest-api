@@ -9,16 +9,25 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+const (
+    MinPasswordLength = 8
+	InvalidPasswordLengthMessage = "Password must be at least 8 characters long."
+)
+
 type User struct {
 	gorm.Model
-	Firstname    string `json:"firstname" validate:"required"`
-	Lastname     string `json:"lastname" validate:"required"`
-	Email        string `json:"email" gorm:"unique;not null" validate:"required,email"`
+	Firstname    string `validate:"required"`
+	Lastname     string `validate:"required"`
+	Email        string `gorm:"unique;not null" validate:"required,email"`
 	Password     string `json:"password,omitempty" validate:"required" gorm:"-"`
-	PasswordHash string `gorm:"not null"`
+	PasswordHash string `json:"-" gorm:"not null"`
 }
 
 func (u *User) SetPassword(password string) error {
+	if !u.ValidatePassword(password, MinPasswordLength) {
+		return errors.New("invalid password length")
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err

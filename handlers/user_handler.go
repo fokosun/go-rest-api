@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/fokosun/go-rest-api/config"
@@ -40,9 +41,11 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	// Validate the password length
-	minLength := 8
+	minLength := models.MinPasswordLength
+	invalidPasswordLengthMessage := models.InvalidPasswordLengthMessage
+
 	if !user.ValidatePassword(user.Password, minLength) {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "Password must be at least 8 characters long."})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: invalidPasswordLengthMessage})
 		return
 	}
 
@@ -58,19 +61,26 @@ func RegisterUser(c *gin.Context) {
 		return
 	}
 
+	user.Password = ""
+
 	c.JSON(http.StatusOK, user)
 }
 
-// todo: user cannot update their email, only firstname, lastname and password
-// when password is updated, invalidate jwt tokens relating to the email
+// todo: when password is updated, invalidate jwt tokens relating to the email
 func UpdateUser(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "User not found."})
 		return
 	}
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
+		return
+	}
+
+	if err := user.SetPassword(user.Password); err != nil {
+		fmt.Printf("error setting password %v\n", err)
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 
@@ -79,6 +89,8 @@ func UpdateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	user.Password = ""
 
 	c.JSON(http.StatusOK, user)
 }
