@@ -36,7 +36,7 @@ func SetupApiRouter(router *gin.Engine) {
 	{
 		books.GET("", handlers.GetBooks)
 		books.GET("/:id", handlers.GetBookByID)
-		books.POST("/", handlers.CreateBook)
+		books.POST("", handlers.CreateBook)
 		books.PUT("/:id", handlers.EditBook)
 		books.DELETE("/:id", handlers.DeleteBook)
 

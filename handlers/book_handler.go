@@ -43,6 +43,23 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
+	if book.Title == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "title is required"})
+		return
+	}
+
+	if book.AuthorID == 0 {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "author_id is required"})
+		return
+	}
+
+	// also check if the author exist
+	var bookAuthor models.Author
+	if err := config.DB.First(&bookAuthor, book.AuthorID).Error; err != nil {
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Author not found"})
+		return
+	}
+
 	config.DB.Create(&book)
 
 	var qb models.Book

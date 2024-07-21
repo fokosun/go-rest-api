@@ -10,6 +10,6 @@ type Book struct {
 	Isbn      string `json:"isbn"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	AuthorID  uint   `json:"author_id" gorm:"not null"` // Foreign key
-	Author    Author `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
+	AuthorID  uint   `gorm:"not null"` // Foreign key
+	Author    Author `gorm:"-,constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
