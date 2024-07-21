@@ -48,6 +48,11 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
+	if book.CreatedBy == 0 {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "created_by is required"})
+		return
+	}
+
 	if book.AuthorID == 0 {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "author_id is required"})
 		return
@@ -71,26 +76,25 @@ func CreateBook(c *gin.Context) {
 	c.JSON(http.StatusCreated, NewBook{ID: int(qb.ID), Title: qb.Title, Isbn: qb.Isbn, Author: qb.Author, CreatedAt: qb.CreatedAt, UpdatedAt: qb.UpdatedAt})
 }
 
-func EditBook(c *gin.Context) {
-	var book models.Book
-	if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
-		return
-	}
-	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
-		return
-	}
-	config.DB.Save(&book)
-	c.JSON(http.StatusOK, book)
-}
-
 func DeleteBook(c *gin.Context) {
 	var book models.Book
+	var user models.User
+
 	if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 		return
 	}
+
+	if err := config.DB.Where("email = ?", c.MustGet("email")).First(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, ErrorResponse{Message: "There was a problem processing this request. Please try again."})
+		return
+	}
+
+	if user.ID != book.CreatedBy {
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "You are not authorized to perform this action."})
+		return
+	}
+
 	config.DB.Delete(&book)
 	c.JSON(http.StatusOK, SuccessResponse{Message: "Book deleted"})
 }

@@ -37,7 +37,7 @@ func SetupApiRouter(router *gin.Engine) {
 		books.GET("", handlers.GetBooks)
 		books.GET("/:id", handlers.GetBookByID)
 		books.POST("", handlers.CreateBook)
-		books.PUT("/:id", handlers.EditBook)
+		// Only the original creator of the book can delete
 		books.DELETE("/:id", handlers.DeleteBook)
 
 		// Ratings
