@@ -46,6 +46,7 @@ func TestMain(m *testing.M) {
 
 	// Teardown
 	// Here you can close connections or clean up resources
+	config.DB.Rollback()
 
 	os.Exit(code)
 }
@@ -59,7 +60,6 @@ func TestRegisterUserFailsIfFirstnameValidationFails(t *testing.T) {
 
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Printf("Panic attack: %v\n", err)
 		panic(err)
 	}
 
@@ -102,7 +102,6 @@ func TestRegisterUserFailsIfLastnameValidationFails(t *testing.T) {
 
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Printf("Panic attack: %v\n", err)
 		panic(err)
 	}
 
@@ -145,7 +144,6 @@ func TestRegisterUserFailsIfEmailValidationFailsNoEmail(t *testing.T) {
 
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Printf("Panic attack: %v\n", err)
 		panic(err)
 	}
 
@@ -189,7 +187,6 @@ func TestRegisterUserFailsIfEmailValidationFailsNotValidEmailFormat(t *testing.T
 
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Printf("Panic attack: %v\n", err)
 		panic(err)
 	}
 
@@ -270,7 +267,7 @@ func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
 	requestData := RegisterRequest{
 		Firstname: "exampleUser",
 		Lastname:  "test",
-		Email:     "user+1@test.com",
+		Email:     "user+3@test.com",
 		Password:  "examplePass",
 	}
 
@@ -303,7 +300,6 @@ func TestRegisterUserFailsIfPasswordValidationFailsIsRequired(t *testing.T) {
 
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Printf("Panic attack: %v\n", err)
 		panic(err)
 	}
 
@@ -347,7 +343,6 @@ func TestRegisterUserFailsIfPasswordValidationFailsIsLessThanMinLen(t *testing.T
 
 	jsonData, err := json.Marshal(requestData)
 	if err != nil {
-		fmt.Printf("Panic attack: %v\n", err)
 		panic(err)
 	}
 
@@ -422,4 +417,152 @@ func TestGetUserByIdRespondsWith200IfUserExists(t *testing.T) {
 
 	// Print the response body for debugging purposes
 	fmt.Println(string(bodyBytes))
+}
+
+func TestUpdateUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
+	requestData := RegisterRequest{
+		Firstname: "newFirstname",
+		Lastname:  "newLastname",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/users/0"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body
+	var errorResponse *handlers.ErrorResponse
+	err = json.Unmarshal(bodyBytes, &errorResponse)
+	assert.NoError(t, err)
+
+	// Assert that the error message is as expected
+	assert.Equal(t, "User not found.", errorResponse.Message)
+}
+
+func TestUpdateUserRespondsWith400BadRequestIfUpdatingPasswordAndPasswordFailsValidation(t *testing.T) {
+	requestData := RegisterRequest{
+		Password: "bad",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/users/1"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body
+	var errorResponse *handlers.ErrorResponse
+	err = json.Unmarshal(bodyBytes, &errorResponse)
+	assert.NoError(t, err)
+
+	// Assert that the error message is as expected
+	assert.Equal(t, "invalid password length", errorResponse.Message)
+}
+
+func TestUpdateUserRespondsWith400BadRequestIfTryingToUpdateEmail(t *testing.T) {
+	requestData := RegisterRequest{
+		Email: "mybrabdnewemail@test.com",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/users/1"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusBadRequest, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body
+	var errorResponse *handlers.ErrorResponse
+	err = json.Unmarshal(bodyBytes, &errorResponse)
+	assert.NoError(t, err)
+
+	// Assert that the error message is as expected
+	assert.Equal(t, "email field cannot be updated", errorResponse.Message)
+}
+
+func TestCanUpdateUserWithAllowedFields(t *testing.T) {
+	requestData := RegisterRequest{
+		Firstname: "Freshman",
+		Lastname:  "Jamrock",
+		Password:  "mynewshinnypassword",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/users/1"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
 }

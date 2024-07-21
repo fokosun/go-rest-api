@@ -19,7 +19,7 @@ type Claims struct {
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if gin.Mode() == gin.TestMode {
-			
+
 			// In test mode, bypass actual authentication
 			c.Set("email", "test@example.com")
 			c.Next()

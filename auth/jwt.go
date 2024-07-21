@@ -9,13 +9,18 @@ import (
 
 var jwtKey = []byte(os.Getenv("jwt-secret"))
 
+const (
+	DefaultExpiryHours = 24
+	ExpireByHours      = 10
+)
+
 type Claims struct {
 	Email string `json:"email"`
 	jwt.RegisteredClaims
 }
 
 func GenerateJWT(email string) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
+	expirationTime := time.Now().Add(DefaultExpiryHours * time.Hour)
 	claims := &Claims{
 		Email: email,
 		RegisteredClaims: jwt.RegisteredClaims{

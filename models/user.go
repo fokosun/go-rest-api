@@ -10,7 +10,7 @@ import (
 )
 
 const (
-    MinPasswordLength = 8
+	MinPasswordLength            = 8
 	InvalidPasswordLengthMessage = "Password must be at least 8 characters long."
 )
 
@@ -60,7 +60,7 @@ func (u *User) BeforeUpdate(tx *gorm.DB) (err error) {
 		return err
 	}
 
-	if u.Email != oldUser.Email {
+	if u.Email != "" && (u.Email != oldUser.Email) {
 		return errors.New("email field cannot be updated")
 	}
 

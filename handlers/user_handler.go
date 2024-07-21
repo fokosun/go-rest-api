@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/fokosun/go-rest-api/config"
@@ -29,7 +28,7 @@ func RegisterUser(c *gin.Context) {
 
 	// Bind the JSON input to the struct
 	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 
@@ -66,27 +65,28 @@ func RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// todo: when password is updated, invalidate jwt tokens relating to the email
 func UpdateUser(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, c.Param("id")).Error; err != nil {
 		c.JSON(http.StatusNotFound, ErrorResponse{Message: "User not found."})
 		return
 	}
+
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 
-	if err := user.SetPassword(user.Password); err != nil {
-		fmt.Printf("error setting password %v\n", err)
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
-		return
+	if len(user.Password) > 0 {
+		if err := user.SetPassword(user.Password); err != nil {
+			c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
+			return
+		}
 	}
 
 	// Update the user in the database
 	if err := config.DB.Model(&user).Updates(user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 
@@ -99,9 +99,9 @@ func UpdateUser(c *gin.Context) {
 func DeleteUser(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "User not found."})
 		return
 	}
 	config.DB.Delete(&user)
-	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
+	c.JSON(http.StatusOK, ErrorResponse{Message: "User deleted."})
 }
