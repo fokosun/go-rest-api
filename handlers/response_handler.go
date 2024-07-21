@@ -6,6 +6,10 @@ type ErrorResponse struct {
 	Message string `json:"message"`
 }
 
+type SuccessResponse struct {
+	Message string `json:"message"`
+}
+
 type ValidationErrorResponse struct {
 	ValidationErrorMessage string `json:"message"`
 }

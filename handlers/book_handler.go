@@ -17,7 +17,7 @@ func GetBooks(c *gin.Context) {
 func GetBookByID(c *gin.Context) {
 	var book models.Book
 	if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 		return
 	}
 	c.JSON(http.StatusOK, book)
@@ -26,7 +26,7 @@ func GetBookByID(c *gin.Context) {
 func CreateBook(c *gin.Context) {
 	var book models.Book
 	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 	config.DB.Create(&book)
@@ -36,11 +36,11 @@ func CreateBook(c *gin.Context) {
 func EditBook(c *gin.Context) {
 	var book models.Book
 	if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 		return
 	}
 	if err := c.ShouldBindJSON(&book); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
 	config.DB.Save(&book)
@@ -50,9 +50,9 @@ func EditBook(c *gin.Context) {
 func DeleteBook(c *gin.Context) {
 	var book models.Book
 	if err := config.DB.First(&book, c.Param("id")).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 		return
 	}
 	config.DB.Delete(&book)
-	c.JSON(http.StatusOK, gin.H{"message": "Book deleted"})
+	c.JSON(http.StatusOK, SuccessResponse{Message: "Book deleted"})
 }

@@ -34,7 +34,7 @@ func SetupApiRouter(router *gin.Engine) {
 	// Books Routes
 	books := router.Group("/books").Use(middlewares.AuthMiddleware())
 	{
-		books.GET("/", handlers.GetBooks)
+		books.GET("", handlers.GetBooks)
 		books.GET("/:id", handlers.GetBookByID)
 		books.POST("/", handlers.CreateBook)
 		books.PUT("/:id", handlers.EditBook)
