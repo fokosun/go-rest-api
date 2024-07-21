@@ -5,6 +5,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fokosun/go-rest-api/config"
+	"github.com/fokosun/go-rest-api/models"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 )
@@ -19,6 +21,18 @@ type Claims struct {
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if gin.Mode() == gin.TestMode {
+			var testUser models.User
+
+			testUser.Firstname = "test"
+			testUser.Lastname = "last"
+			testUser.Email = "test@example.com"
+			testUser.Password = "validPass"
+			testUser.SetPassword("validPass")
+
+			if err := config.DB.Where("email = ?", testUser.Email).First(&testUser).Error; err != nil {
+				// Save the user to the database
+				config.DB.Create(&testUser)
+			}
 
 			// In test mode, bypass actual authentication
 			c.Set("email", "test@example.com")

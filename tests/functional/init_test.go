@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 
 	testUser.Firstname = "test"
 	testUser.Lastname = "test"
-	testUser.Email = "user@test.com"
+	testUser.Email = "test@example.com"
 	testUser.SetPassword("validpassword")
 
 	// Save the user to the database

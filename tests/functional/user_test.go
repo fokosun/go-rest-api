@@ -587,7 +587,7 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	err = json.Unmarshal(bodyBytes, &updatedUser)
 	assert.NoError(t, err)
 
-	assert.Equal(t, updatedUser.Firstname,  testUser.Firstname)
+	assert.Equal(t, updatedUser.Firstname, testUser.Firstname)
 	assert.Equal(t, updatedUser.Lastname, testUser.Lastname)
 }
 
