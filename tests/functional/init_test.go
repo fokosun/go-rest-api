@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"net/http/httptest"
 	"os"
 	"testing"
 
@@ -12,7 +11,6 @@ import (
 )
 
 var router *gin.Engine
-var w *httptest.ResponseRecorder
 var testUser models.User
 
 func TestMain(m *testing.M) {
@@ -35,10 +33,12 @@ func TestMain(m *testing.M) {
 	config.DB.FirstOrCreate(&testUser)
 
 	router = routes.SetupRouter()
-	w = httptest.NewRecorder()
 
 	// Run tests
 	code := m.Run()
+
+	// Cleanup
+	config.DB.Delete(&testUser)
 
 	os.Exit(code)
 }

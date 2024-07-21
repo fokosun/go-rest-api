@@ -102,6 +102,7 @@ func DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, ErrorResponse{Message: "User not found."})
 		return
 	}
+
 	config.DB.Delete(&user)
 	c.JSON(http.StatusNoContent, nil)
 }

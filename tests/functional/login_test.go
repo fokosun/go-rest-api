@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/fokosun/go-rest-api/config"
@@ -20,6 +21,8 @@ type LoginRequest struct {
 }
 
 func TestLoginFailsWhenGivenEmailDoesNotExist(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := LoginRequest{
 		Email:    "doesnotexist@test.com",
 		Password: "newExamplePass",
@@ -62,6 +65,8 @@ func TestLoginFailsWhenGivenEmailDoesNotExist(t *testing.T) {
 
 // todo
 func TestLoginFailsWhenPasswordCheckFails(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := LoginRequest{
 		Email:    testUser.Email,
 		Password: "passworddoesnotmatch",
@@ -104,6 +109,8 @@ func TestLoginFailsWhenPasswordCheckFails(t *testing.T) {
 
 // to do
 func TestLoginSucceedsWhenEmailAndPasswordMatch(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	//create new user
 	var newUser models.User
 	newUser.Firstname = "test"

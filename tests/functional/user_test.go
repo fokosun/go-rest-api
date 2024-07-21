@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"strconv"
 	"testing"
 
@@ -23,6 +24,8 @@ type RegisterRequest struct {
 }
 
 func TestRegisterUserFailsIfFirstnameValidationFails(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Lastname: "test",
 		Email:    "user@test.com",
@@ -65,6 +68,8 @@ func TestRegisterUserFailsIfFirstnameValidationFails(t *testing.T) {
 }
 
 func TestRegisterUserFailsIfLastnameValidationFails(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Fisher",
 		Email:     "user@test.com",
@@ -107,6 +112,8 @@ func TestRegisterUserFailsIfLastnameValidationFails(t *testing.T) {
 }
 
 func TestRegisterUserFailsIfEmailValidationFailsNoEmail(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Fisher",
 		Lastname:  "Trimii",
@@ -149,6 +156,8 @@ func TestRegisterUserFailsIfEmailValidationFailsNoEmail(t *testing.T) {
 }
 
 func TestRegisterUserFailsIfEmailValidationFailsNotValidEmailFormat(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Fisher",
 		Lastname:  "Trimii",
@@ -192,6 +201,8 @@ func TestRegisterUserFailsIfEmailValidationFailsNotValidEmailFormat(t *testing.T
 }
 
 func TestRegisterUserFailsIfEmailValidationFailsNotUnique(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: testUser.Firstname,
 		Lastname:  testUser.Lastname,
@@ -235,6 +246,8 @@ func TestRegisterUserFailsIfEmailValidationFailsNotUnique(t *testing.T) {
 }
 
 func TestRegisterUserFailsIfPasswordValidationFailsIsRequired(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Fisher",
 		Lastname:  "Trimii",
@@ -277,6 +290,8 @@ func TestRegisterUserFailsIfPasswordValidationFailsIsRequired(t *testing.T) {
 }
 
 func TestRegisterUserFailsIfPasswordValidationFailsIsLessThanMinLen(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Fisher",
 		Lastname:  "Trimii",
@@ -320,6 +335,8 @@ func TestRegisterUserFailsIfPasswordValidationFailsIsLessThanMinLen(t *testing.T
 }
 
 func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "exampleUser",
 		Lastname:  "test",
@@ -362,6 +379,8 @@ func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
 }
 
 func TestGetUsersSucceeds(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	req, _ := http.NewRequest("GET", "/users", nil)
 	router.ServeHTTP(w, req)
 
@@ -394,6 +413,8 @@ func TestGetUsersSucceeds(t *testing.T) {
 }
 
 func TestGetUserByIdRespondsWith404IfUserNotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	req, _ := http.NewRequest("GET", "/users/0", nil)
 	router.ServeHTTP(w, req)
 
@@ -408,6 +429,8 @@ func TestGetUserByIdRespondsWith404IfUserNotFound(t *testing.T) {
 }
 
 func TestGetUserByIdRespondsWith200IfUserExists(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	relativeUrl := "/users/" + strconv.Itoa(int(testUser.ID))
 	req, _ := http.NewRequest("GET", relativeUrl, nil)
 	router.ServeHTTP(w, req)
@@ -430,6 +453,8 @@ func TestGetUserByIdRespondsWith200IfUserExists(t *testing.T) {
 }
 
 func TestUpdateUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "newFirstname",
 		Lastname:  "newLastname",
@@ -471,6 +496,8 @@ func TestUpdateUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
 }
 
 func TestUpdateUserRespondsWith400BadRequestIfUpdatingPasswordAndPasswordFailsValidation(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Password: "bad",
 	}
@@ -481,7 +508,7 @@ func TestUpdateUserRespondsWith400BadRequestIfUpdatingPasswordAndPasswordFailsVa
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/1"
+	relativeURL := "/users/" + strconv.Itoa(int(testUser.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -511,6 +538,8 @@ func TestUpdateUserRespondsWith400BadRequestIfUpdatingPasswordAndPasswordFailsVa
 }
 
 func TestUpdateUserRespondsWith400BadRequestIfTryingToUpdateEmail(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Email: "mybrabdnewemail@test.com",
 	}
@@ -521,7 +550,7 @@ func TestUpdateUserRespondsWith400BadRequestIfTryingToUpdateEmail(t *testing.T) 
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/1"
+	relativeURL := "/users/" + strconv.Itoa(int(testUser.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -551,6 +580,8 @@ func TestUpdateUserRespondsWith400BadRequestIfTryingToUpdateEmail(t *testing.T) 
 }
 
 func TestCanUpdateUserWithAllowedFields(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Freshman",
 		Lastname:  "Jamrock",
@@ -587,11 +618,13 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	err = json.Unmarshal(bodyBytes, &updatedUser)
 	assert.NoError(t, err)
 
-	assert.Equal(t, updatedUser.Firstname, testUser.Firstname)
-	assert.Equal(t, updatedUser.Lastname, testUser.Lastname)
+	assert.Equal(t, updatedUser.Firstname, requestData.Firstname)
+	assert.Equal(t, updatedUser.Lastname, requestData.Lastname)
 }
 
 func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	req, err := http.NewRequest("DELETE", "/users/0", nil)
 
 	if err != nil {
@@ -619,6 +652,8 @@ func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
 }
 
 func TestDeleteUserSucceedsIfUserFound(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	//create a test user
 	var newUser models.User
 	newUser.Firstname = "test"

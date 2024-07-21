@@ -7,7 +7,14 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}",
-            "env": {},
+            "env": {
+                "DB_HOST": "localhost",
+                "DB_USER": "root",
+                "DB_PASSWORD": "pass",
+                "DB_NAME": "books_store",
+                "DB_PORT": "5432"
+
+            },
             "args": [],
             "showLog": true
         }

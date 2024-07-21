@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/fokosun/go-rest-api/handlers"
@@ -19,6 +20,8 @@ type CreateAuthorRequest struct {
 }
 
 func TestAuthorFirstnameIsRequiredExpect404Badrequest(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Lastname: "Trimii",
 	}
@@ -58,6 +61,8 @@ func TestAuthorFirstnameIsRequiredExpect404Badrequest(t *testing.T) {
 }
 
 func TestAuthorLastnameIsRequiredExpect404Badrequest(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "Trimii",
 	}
@@ -97,6 +102,8 @@ func TestAuthorLastnameIsRequiredExpect404Badrequest(t *testing.T) {
 }
 
 func TestExistingUserCanSuccessfullyCreateAuthor(t *testing.T) {
+	w := httptest.NewRecorder()
+
 	requestData := RegisterRequest{
 		Firstname: "first",
 		Lastname:  "last",
