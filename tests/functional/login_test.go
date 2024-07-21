@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/fokosun/go-rest-api/config"
 	"github.com/fokosun/go-rest-api/handlers"
+	"github.com/fokosun/go-rest-api/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -61,8 +63,8 @@ func TestLoginFailsWhenGivenEmailDoesNotExist(t *testing.T) {
 // todo
 func TestLoginFailsWhenPasswordCheckFails(t *testing.T) {
 	requestData := LoginRequest{
-		Email:    "doesnotexist@test.com",
-		Password: "newExamplePass",
+		Email:    testUser.Email,
+		Password: "passworddoesnotmatch",
 	}
 
 	jsonData, err := json.Marshal(requestData)
@@ -102,5 +104,51 @@ func TestLoginFailsWhenPasswordCheckFails(t *testing.T) {
 
 // to do
 func TestLoginSucceedsWhenEmailAndPasswordMatch(t *testing.T) {
+	//create new user
+	var newUser models.User
+	newUser.Firstname = "test"
+	newUser.Lastname = "last"
+	newUser.Email = "login@test.com"
+	newUser.SetPassword("validpassword")
 
+	// Save the user to the database
+	config.DB.Create(&newUser)
+
+	requestData := LoginRequest{
+		Email:    newUser.Email,
+		Password: "validpassword",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/auth/login"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body into a slice of users
+	var LoginToken handlers.LoginToken
+	err = json.Unmarshal(bodyBytes, &LoginToken)
+	assert.NoError(t, err)
+
+	fmt.Printf("LoginToken %v\n", LoginToken)
 }

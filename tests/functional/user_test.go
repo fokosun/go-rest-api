@@ -587,8 +587,8 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	err = json.Unmarshal(bodyBytes, &updatedUser)
 	assert.NoError(t, err)
 
-	assert.Equal(t, testUser.Firstname, updatedUser.Firstname)
-	assert.Equal(t, testUser.Lastname, updatedUser.Lastname)
+	assert.Equal(t, updatedUser.Firstname,  testUser.Firstname)
+	assert.Equal(t, updatedUser.Lastname, testUser.Lastname)
 }
 
 func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {

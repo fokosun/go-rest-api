@@ -20,13 +20,15 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	reqPassword := loginDetails.Password
+
 	var user models.User
 	if err := config.DB.Where("email = ?", loginDetails.Email).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "invalid email or password"})
 		return
 	}
 
-	if !user.CheckPassword(loginDetails.Password) {
+	if !user.CheckPassword(reqPassword) {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "invalid email or password"})
 		return
 	}
@@ -37,5 +39,5 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, LoginToken{Token: token})
 }
