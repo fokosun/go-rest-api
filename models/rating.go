@@ -1,11 +1,15 @@
 package models
 
+import "time"
+
 type Rating struct {
-	ID      uint `gorm:"primaryKey"`
-	UserID  uint
-	BookID  int
-	Rating  int    `json:"rating" gorm:"default:1"`
-	Comment string `json:"comment"`
+	ID        uint `gorm:"primarykey"`
+	UserID    uint
+	BookID    int
+	Rating    int    `json:"rating" gorm:"default:1"`
+	Comment   string `json:"comment"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (r *Rating) SetBookID(bookID int) error {

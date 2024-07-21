@@ -1,17 +1,20 @@
 package models
 
 import (
+	"time"
+
 	"github.com/go-playground/validator/v10"
-	"gorm.io/gorm"
 )
 
 type Author struct {
-	gorm.Model
+	ID        uint   `gorm:"primarykey"`
 	Firstname string `json:"firstname" validate:"required"`
 	Lastname  string `json:"lastname" validate:"required"`
 	Gravatar  string `json:"gravatar"`
 	CreatedBy uint
 	UpdatedBy uint
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (a *Author) SetCreatedBy(userId uint) error {

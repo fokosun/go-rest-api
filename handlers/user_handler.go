@@ -61,8 +61,7 @@ func RegisterUser(c *gin.Context) {
 	}
 
 	user.Password = ""
-
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, NewUser{ID: int(user.ID), Firstname: user.Firstname, Lastname: user.Lastname, Email: user.Email, CreatedAt: user.CreatedAt, UpdatedAt: user.UpdatedAt})
 }
 
 func UpdateUser(c *gin.Context) {
@@ -96,6 +95,7 @@ func UpdateUser(c *gin.Context) {
 }
 
 // ensure cascade on delete actually happens
+// and maybe do a force delete instead of soft?
 func DeleteUser(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, c.Param("id")).Error; err != nil {

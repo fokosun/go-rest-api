@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -15,12 +16,14 @@ const (
 )
 
 type User struct {
-	gorm.Model
+	ID           uint   `gorm:"primarykey"`
 	Firstname    string `validate:"required"`
 	Lastname     string `validate:"required"`
 	Email        string `gorm:"unique;not null" validate:"required,email"`
 	Password     string `json:"password,omitempty" validate:"required" gorm:"-"`
 	PasswordHash string `json:"-" gorm:"not null"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 func (u *User) SetPassword(password string) error {

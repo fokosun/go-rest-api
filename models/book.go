@@ -2,13 +2,14 @@ package models
 
 import (
 	"database/sql"
-
-	"gorm.io/gorm"
+	"time"
 )
 
 type Book struct {
-	gorm.Model
-	Title    string `json:"title"`
-	Isbn     string `json:"isbn"`
-	AuthorID sql.NullInt64
+	ID        uint   `gorm:"primarykey"`
+	Title     string `json:"title"`
+	Isbn      string `json:"isbn"`
+	AuthorID  sql.NullInt64
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }

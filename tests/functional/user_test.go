@@ -6,50 +6,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
-	"os"
 	"strconv"
 	"testing"
 
 	"github.com/fokosun/go-rest-api/config"
 	"github.com/fokosun/go-rest-api/handlers"
 	"github.com/fokosun/go-rest-api/models"
-	"github.com/fokosun/go-rest-api/routes"
-	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 )
-
-var router *gin.Engine
-var w *httptest.ResponseRecorder
 
 type RegisterRequest struct {
 	Firstname string `json:"firstname"`
 	Lastname  string `json:"lastname"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-}
-
-func TestMain(m *testing.M) {
-	gin.SetMode(gin.TestMode)
-
-	os.Setenv("DB_HOST", "localhost")
-	os.Setenv("DB_USER", "root")
-	os.Setenv("DB_PASSWORD", "pass")
-	os.Setenv("DB_NAME", "books_store")
-	os.Setenv("DB_PORT", "5432")
-
-	config.ConnectDatabase()
-
-	router = routes.SetupRouter()
-	w = httptest.NewRecorder()
-
-	// Run tests
-	code := m.Run()
-
-	// Teardown
-	// Here you can close connections or clean up resources
-
-	os.Exit(code)
 }
 
 func TestRegisterUserFailsIfFirstnameValidationFails(t *testing.T) {
@@ -223,10 +193,10 @@ func TestRegisterUserFailsIfEmailValidationFailsNotValidEmailFormat(t *testing.T
 
 func TestRegisterUserFailsIfEmailValidationFailsNotUnique(t *testing.T) {
 	requestData := RegisterRequest{
-		Firstname: "exampleUser",
-		Lastname:  "test",
-		Email:     "user@test.com",
-		Password:  "newExamplePass",
+		Firstname: testUser.Firstname,
+		Lastname:  testUser.Lastname,
+		Email:     testUser.Email,
+		Password:  "validpassword",
 	}
 
 	jsonData, err := json.Marshal(requestData)
@@ -262,34 +232,6 @@ func TestRegisterUserFailsIfEmailValidationFailsNotUnique(t *testing.T) {
 
 	// Assert that the error message is as expected
 	assert.Equal(t, "User already exists.", errorResponse.Message)
-}
-
-func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
-	requestData := RegisterRequest{
-		Firstname: "exampleUser",
-		Lastname:  "test",
-		Email:     "user+3@test.com",
-		Password:  "examplePass",
-	}
-
-	jsonData, err := json.Marshal(requestData)
-	if err != nil {
-		panic(err)
-	}
-
-	baseURL := "http://localhost:8080"
-	relativeURL := "/register"
-	fullURL := baseURL + relativeURL
-
-	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
-
-	if err != nil {
-		panic(err)
-	}
-
-	router.ServeHTTP(w, req)
-
-	assert.Equal(t, http.StatusOK, w.Code)
 }
 
 func TestRegisterUserFailsIfPasswordValidationFailsIsRequired(t *testing.T) {
@@ -377,6 +319,48 @@ func TestRegisterUserFailsIfPasswordValidationFailsIsLessThanMinLen(t *testing.T
 	assert.Equal(t, "Password must be at least 8 characters long.", errorResponse.Message)
 }
 
+func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
+	requestData := RegisterRequest{
+		Firstname: "exampleUser",
+		Lastname:  "test",
+		Email:     "user+3@test.com",
+		Password:  "examplePass",
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		panic(err)
+	}
+
+	baseURL := "http://localhost:8080"
+	relativeURL := "/register"
+	fullURL := baseURL + relativeURL
+
+	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	// Find the newly created user by email
+	var newUser models.User
+	if err := config.DB.Where("email = ?", requestData.Email).First(&newUser).Error; err != nil {
+		t.Fatalf("could not find user: %v", err)
+	}
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, newUser.Firstname, requestData.Firstname)
+	assert.Equal(t, newUser.Lastname, requestData.Lastname)
+	assert.Equal(t, newUser.Email, requestData.Email)
+
+	// Delete the newly created user
+	if err := config.DB.Delete(&newUser).Error; err != nil {
+		t.Fatalf("could not delete user: %v", err)
+	}
+}
+
 func TestGetUsersSucceeds(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/users", nil)
 	router.ServeHTTP(w, req)
@@ -389,6 +373,24 @@ func TestGetUsersSucceeds(t *testing.T) {
 
 	// Print the response body for debugging purposes
 	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body into a slice of users
+	var users []models.User
+	err = json.Unmarshal(bodyBytes, &users)
+	assert.NoError(t, err)
+
+	// Assert that the response is a list
+	assert.IsType(t, []models.User{}, users)
+
+	// Assert that each item has the specific keys
+	for _, user := range users {
+		assert.NotEmpty(t, user.ID)
+		assert.NotEmpty(t, user.Firstname)
+		assert.NotEmpty(t, user.Lastname)
+		assert.NotEmpty(t, user.Email)
+		assert.NotEmpty(t, user.CreatedAt)
+		assert.NotEmpty(t, user.UpdatedAt)
+	}
 }
 
 func TestGetUserByIdRespondsWith404IfUserNotFound(t *testing.T) {
@@ -405,9 +407,9 @@ func TestGetUserByIdRespondsWith404IfUserNotFound(t *testing.T) {
 	fmt.Println(string(bodyBytes))
 }
 
-// todo: revisit this :id 1 may not always exist
 func TestGetUserByIdRespondsWith200IfUserExists(t *testing.T) {
-	req, _ := http.NewRequest("GET", "/users/1", nil)
+	relativeUrl := "/users/" + strconv.Itoa(int(testUser.ID))
+	req, _ := http.NewRequest("GET", relativeUrl, nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -418,6 +420,13 @@ func TestGetUserByIdRespondsWith200IfUserExists(t *testing.T) {
 
 	// Print the response body for debugging purposes
 	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body into a slice of users
+	var foundUser models.User
+	err = json.Unmarshal(bodyBytes, &foundUser)
+	assert.NoError(t, err)
+
+	assert.Equal(t, testUser.ID, foundUser.ID)
 }
 
 func TestUpdateUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
