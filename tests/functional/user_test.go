@@ -48,7 +48,6 @@ func TestMain(m *testing.M) {
 
 	// Teardown
 	// Here you can close connections or clean up resources
-	config.DB.Rollback()
 
 	os.Exit(code)
 }
