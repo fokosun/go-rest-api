@@ -563,7 +563,7 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/1"
+	relativeURL := "/users/" + strconv.Itoa(int(testUser.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -575,6 +575,20 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	var updatedUser models.User
+	err = json.Unmarshal(bodyBytes, &updatedUser)
+	assert.NoError(t, err)
+
+	assert.Equal(t, testUser.Firstname, updatedUser.Firstname)
+	assert.Equal(t, testUser.Lastname, updatedUser.Lastname)
 }
 
 func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
