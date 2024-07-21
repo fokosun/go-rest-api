@@ -103,5 +103,5 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 	config.DB.Delete(&user)
-	c.JSON(http.StatusOK, ErrorResponse{Message: "User deleted."})
+	c.JSON(http.StatusNoContent, nil)
 }

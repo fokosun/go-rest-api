@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/fokosun/go-rest-api/config"
 	"github.com/fokosun/go-rest-api/handlers"
+	"github.com/fokosun/go-rest-api/models"
 	"github.com/fokosun/go-rest-api/routes"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -565,4 +567,55 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
+	req, err := http.NewRequest("DELETE", "/users/0", nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNotFound, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body
+	var errorResponse *handlers.ErrorResponse
+	err = json.Unmarshal(bodyBytes, &errorResponse)
+	assert.NoError(t, err)
+
+	// Assert that the error message is as expected
+	assert.Equal(t, "User not found.", errorResponse.Message)
+}
+
+func TestDeleteUserSucceedsIfUserFound(t *testing.T) {
+	//create a test user
+	var newUser models.User
+	newUser.Firstname = "test"
+	newUser.Lastname = "last"
+	newUser.Email = "del@test.com"
+	newUser.SetPassword("validpassword")
+
+	// Save the user to the database
+	config.DB.Create(&newUser)
+
+	relativeUrl := "/users/" + strconv.Itoa(int(newUser.ID))
+
+	req, err := http.NewRequest("DELETE", relativeUrl, nil)
+
+	if err != nil {
+		panic(err)
+	}
+
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, http.StatusNoContent, w.Code)
 }
