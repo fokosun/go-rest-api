@@ -75,10 +75,23 @@ func TestGetBooksRespondsWith404NotFoundWhenBookIDDoesNotExist(t *testing.T) {
 func TestGetBooksReturnsBookIfBookIDExists(t *testing.T) {
 	w := httptest.NewRecorder()
 
+	var newUser models.User
+	newUser.Firstname = "Tiger"
+	newUser.Lastname = "Eisten"
+	newUser.Email = "tiger.eisten@test.com"
+	newUser.SetPassword("avalidPass")
+	config.DB.Create(&newUser)
+
+	var newAuthor models.Author
+	newAuthor.Firstname = "Tiger"
+	newAuthor.Lastname = "Eisten"
+	newAuthor.CreatedBy = newUser.ID
+	config.DB.Create(&newAuthor)
+
 	var newBook models.Book
-	newBook.Title = "Hansel Un Gretel"
+	newBook.Title = "Hansel Un Gretel2"
 	newBook.Isbn = "ISN-192-168-71-71"
-	newBook.AuthorID = testUser.ID
+	newBook.AuthorID = newAuthor.ID
 
 	config.DB.Create(&newBook)
 
@@ -102,5 +115,7 @@ func TestGetBooksReturnsBookIfBookIDExists(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, newBook.ID, foundBook.ID)
-	fmt.Printf("Book Author %v\n", newBook.Author)
+	assert.Equal(t, newBook.Title, foundBook.Title)
+	assert.Equal(t, newBook.Isbn, foundBook.Isbn)
+	assert.Equal(t, newBook.AuthorID, foundBook.Author.ID)
 }

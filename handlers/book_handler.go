@@ -33,7 +33,7 @@ func GetBookByID(c *gin.Context) {
 		return db.Select("ID", "Firstname", "Lastname", "Gravatar", "CreatedBy", "UpdatedBy", "CreatedAt", "UpdatedAt")
 	}).First(&qb, book.ID)
 
-	c.JSON(http.StatusCreated, NewBook{ID: int(qb.ID), Title: qb.Title, Isbn: qb.Isbn, Author: qb.Author, CreatedAt: qb.CreatedAt, UpdatedAt: qb.UpdatedAt})
+	c.JSON(http.StatusOK, NewBook{ID: int(qb.ID), Title: qb.Title, Isbn: qb.Isbn, Author: qb.Author, CreatedAt: qb.CreatedAt, UpdatedAt: qb.UpdatedAt})
 }
 
 func CreateBook(c *gin.Context) {
