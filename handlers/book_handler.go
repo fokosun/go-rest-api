@@ -6,11 +6,17 @@ import (
 	"github.com/fokosun/go-rest-api/config"
 	"github.com/fokosun/go-rest-api/models"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func GetBooks(c *gin.Context) {
 	books := []models.Book{}
 	config.DB.Find(&books)
+
+	config.DB.Preload("Author", func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID", "Firstname", "Lastname", "Gravatar", "CreatedBy", "UpdatedBy", "CreatedAt", "UpdatedAt")
+	}).Find(&books)
+
 	c.JSON(http.StatusOK, books)
 }
 
@@ -20,7 +26,14 @@ func GetBookByID(c *gin.Context) {
 		c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 		return
 	}
-	c.JSON(http.StatusOK, book)
+
+	var qb models.Book
+
+	config.DB.Preload("Author", func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID", "Firstname", "Lastname", "Gravatar", "CreatedBy", "UpdatedBy", "CreatedAt", "UpdatedAt")
+	}).First(&qb, book.ID)
+
+	c.JSON(http.StatusCreated, NewBook{ID: int(qb.ID), Title: qb.Title, Isbn: qb.Isbn, Author: qb.Author, CreatedAt: qb.CreatedAt, UpdatedAt: qb.UpdatedAt})
 }
 
 func CreateBook(c *gin.Context) {
@@ -29,8 +42,16 @@ func CreateBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
+
 	config.DB.Create(&book)
-	c.JSON(http.StatusCreated, book)
+
+	var qb models.Book
+
+	config.DB.Preload("Author", func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID", "Firstname", "Lastname", "Gravatar", "CreatedBy", "UpdatedBy", "CreatedAt", "UpdatedAt")
+	}).First(&qb, book.ID)
+
+	c.JSON(http.StatusCreated, NewBook{ID: int(qb.ID), Title: qb.Title, Isbn: qb.Isbn, Author: qb.Author, CreatedAt: qb.CreatedAt, UpdatedAt: qb.UpdatedAt})
 }
 
 func EditBook(c *gin.Context) {

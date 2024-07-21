@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -79,8 +78,7 @@ func TestGetBooksReturnsBookIfBookIDExists(t *testing.T) {
 	var newBook models.Book
 	newBook.Title = "Hansel Un Gretel"
 	newBook.Isbn = "ISN-192-168-71-71"
-	authorID := sql.NullInt64{Int64: int64(testUser.ID), Valid: true}
-	newBook.AuthorID = authorID
+	newBook.AuthorID = testUser.ID
 
 	config.DB.Create(&newBook)
 
@@ -104,4 +102,5 @@ func TestGetBooksReturnsBookIfBookIDExists(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, newBook.ID, foundBook.ID)
+	fmt.Printf("Book Author %v\n", newBook.Author)
 }

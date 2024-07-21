@@ -15,6 +15,7 @@ type Author struct {
 	UpdatedBy uint
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	Books     []Book `gorm:"foreignKey:AuthorID"`
 }
 
 func (a *Author) SetCreatedBy(userId uint) error {
