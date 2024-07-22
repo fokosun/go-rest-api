@@ -35,7 +35,7 @@ func TestAuthorFirstnameIsRequiredExpect404Badrequest(t *testing.T) {
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/authors"
+	relativeURL := "/api/users/authors"
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
@@ -76,7 +76,7 @@ func TestAuthorLastnameIsRequiredExpect404Badrequest(t *testing.T) {
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/authors"
+	relativeURL := "/api/users/authors"
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
@@ -118,7 +118,7 @@ func TestExistingUserCanSuccessfullyCreateAuthor(t *testing.T) {
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/authors"
+	relativeURL := "/api/users/authors"
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
@@ -134,7 +134,7 @@ func TestExistingUserCanSuccessfullyCreateAuthor(t *testing.T) {
 func TestGetAuthorsSucceeds(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	relativeURL := "/users/authors"
+	relativeURL := "/api/users/authors"
 
 	req, _ := http.NewRequest("GET", relativeURL, nil)
 	router.ServeHTTP(w, req)
@@ -169,7 +169,7 @@ func TestGetAuthorsSucceeds(t *testing.T) {
 func TestGetAuthorByIdRespondsWith404IfUserNotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	relativeURL := "/users/authors/0"
+	relativeURL := "/api/users/authors/0"
 
 	req, _ := http.NewRequest("GET", relativeURL, nil)
 	router.ServeHTTP(w, req)
@@ -201,7 +201,7 @@ func TestGetAuthorByIdRespondsWith200IfUserExists(t *testing.T) {
 
 	config.DB.Create(&newAuthor)
 
-	relativeUrl := "/users/authors/" + strconv.Itoa(int(newAuthor.ID))
+	relativeUrl := "/api/users/authors/" + strconv.Itoa(int(newAuthor.ID))
 
 	req, _ := http.NewRequest("GET", relativeUrl, nil)
 	router.ServeHTTP(w, req)

@@ -26,7 +26,7 @@ type CreateBookRequest struct {
 func TestGetBooksSucceeds(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("GET", "/books", nil)
+	req, _ := http.NewRequest("GET", "/api/books", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -59,7 +59,7 @@ func TestGetBooksSucceeds(t *testing.T) {
 func TestGetBooksRespondsWith404NotFoundWhenBookIDDoesNotExist(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("GET", "/books/0", nil)
+	req, _ := http.NewRequest("GET", "/api/books/0", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
@@ -103,7 +103,7 @@ func TestGetBookReturnsBookIfBookIDExists(t *testing.T) {
 
 	config.DB.Create(&newBook)
 
-	relativeUrl := "/books/" + strconv.Itoa(int(newBook.ID))
+	relativeUrl := "/api/books/" + strconv.Itoa(int(newBook.ID))
 
 	req, _ := http.NewRequest("GET", relativeUrl, nil)
 	router.ServeHTTP(w, req)
@@ -144,7 +144,7 @@ func TestCreateBookRequiresBookTitleWhenNull(t *testing.T) {
 		panic(err)
 	}
 
-	fullURL := "http://localhost:8080/books"
+	fullURL := "http://localhost:8080/api/books"
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -184,7 +184,7 @@ func TestCreateBookRequiresBookTitleWhenEmpty(t *testing.T) {
 		panic(err)
 	}
 
-	fullURL := "http://localhost:8080/books"
+	fullURL := "http://localhost:8080/api/books"
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -225,7 +225,7 @@ func TestCreateBookRequiresUserID(t *testing.T) {
 		panic(err)
 	}
 
-	fullURL := "http://localhost:8080/books"
+	fullURL := "http://localhost:8080/api/books"
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -269,7 +269,7 @@ func TestCreateBookRequiresAuthorID(t *testing.T) {
 		panic(err)
 	}
 
-	fullURL := "http://localhost:8080/books"
+	fullURL := "http://localhost:8080/api/books"
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -320,7 +320,7 @@ func TestCreateBookRequiresAuthorIDToExist(t *testing.T) {
 		panic(err)
 	}
 
-	fullURL := "http://localhost:8080/books"
+	fullURL := "http://localhost:8080/api/books"
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -371,7 +371,7 @@ func TestCreateBookCanSuccessfullyCreateABookWhenNoErrors(t *testing.T) {
 		panic(err)
 	}
 
-	fullURL := "http://localhost:8080/books"
+	fullURL := "http://localhost:8080/api/books"
 	req, err := http.NewRequest("POST", fullURL, bytes.NewBuffer(jsonData))
 
 	if err != nil {
@@ -402,7 +402,7 @@ func TestCreateBookCanSuccessfullyCreateABookWhenNoErrors(t *testing.T) {
 func TestDeleteBookRespondsWith404NotFoundWhenGivenIDDoesNotExist(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	fullURL := "http://localhost:8080/books/0"
+	fullURL := "http://localhost:8080/api/books/0"
 	req, err := http.NewRequest("DELETE", fullURL, nil)
 
 	if err != nil {
@@ -453,7 +453,7 @@ func TestDeleteBookRespondsWith401UnauthorizedWhenUserUnauthorizedToDeleteBook(t
 
 	config.DB.Create(&newBook)
 
-	fullURL := "http://localhost:8080/books/" + strconv.Itoa(int(newBook.ID))
+	fullURL := "http://localhost:8080/api/books/" + strconv.Itoa(int(newBook.ID))
 	req, err := http.NewRequest("DELETE", fullURL, nil)
 
 	if err != nil {
@@ -508,7 +508,7 @@ func TestDeleteBookSuccessfullyDeletesABookByID(t *testing.T) {
 
 	config.DB.Create(&newBook)
 
-	fullURL := "http://localhost:8080/books/" + strconv.Itoa(int(newBook.ID))
+	fullURL := "http://localhost:8080/api/books/" + strconv.Itoa(int(newBook.ID))
 	req, err := http.NewRequest("DELETE", fullURL, nil)
 
 	if err != nil {

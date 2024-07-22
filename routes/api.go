@@ -7,17 +7,8 @@ import (
 )
 
 func SetupApiRouter(router *gin.Engine) {
-	// Auth Routes
-	auth := router.Group("/auth")
-	{
-		auth.POST("/login", handlers.Login)
-	}
-
-	// Register a new user
-	router.POST("/register", handlers.RegisterUser)
-
 	// Users Routes
-	users := router.Group("/users").Use(middlewares.AuthMiddleware())
+	users := router.Group("/api/users").Use(middlewares.AuthMiddleware())
 	{
 		users.GET("", handlers.GetUsers)
 		users.GET("/:id", handlers.GetUserByID)
@@ -32,7 +23,7 @@ func SetupApiRouter(router *gin.Engine) {
 	}
 
 	// Books Routes
-	books := router.Group("/books").Use(middlewares.AuthMiddleware())
+	books := router.Group("/api/books").Use(middlewares.AuthMiddleware())
 	{
 		books.GET("", handlers.GetBooks)
 		books.GET("/:id", handlers.GetBookByID)

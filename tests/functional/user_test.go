@@ -381,7 +381,7 @@ func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
 func TestGetUsersSucceeds(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("GET", "/users", nil)
+	req, _ := http.NewRequest("GET", "/api/users", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusOK, w.Code)
@@ -415,7 +415,7 @@ func TestGetUsersSucceeds(t *testing.T) {
 func TestGetUserByIdRespondsWith404IfUserNotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	req, _ := http.NewRequest("GET", "/users/0", nil)
+	req, _ := http.NewRequest("GET", "/api/users/0", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNotFound, w.Code)
@@ -431,7 +431,7 @@ func TestGetUserByIdRespondsWith404IfUserNotFound(t *testing.T) {
 func TestGetUserByIdRespondsWith200IfUserExists(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	relativeUrl := "/users/" + strconv.Itoa(int(testUser.ID))
+	relativeUrl := "/api/users/" + strconv.Itoa(int(testUser.ID))
 	req, _ := http.NewRequest("GET", relativeUrl, nil)
 	router.ServeHTTP(w, req)
 
@@ -466,7 +466,7 @@ func TestUpdateUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/0"
+	relativeURL := "/api/users/0"
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -508,7 +508,7 @@ func TestUpdateUserRespondsWith400BadRequestIfUpdatingPasswordAndPasswordFailsVa
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/" + strconv.Itoa(int(testUser.ID))
+	relativeURL := "/api/users/" + strconv.Itoa(int(testUser.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -550,7 +550,7 @@ func TestUpdateUserRespondsWith400BadRequestIfTryingToUpdateEmail(t *testing.T) 
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/" + strconv.Itoa(int(testUser.ID))
+	relativeURL := "/api/users/" + strconv.Itoa(int(testUser.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -594,7 +594,7 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 	}
 
 	baseURL := "http://localhost:8080"
-	relativeURL := "/users/" + strconv.Itoa(int(testUser.ID))
+	relativeURL := "/api/users/" + strconv.Itoa(int(testUser.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -625,7 +625,7 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	req, err := http.NewRequest("DELETE", "/users/0", nil)
+	req, err := http.NewRequest("DELETE", "/api/users/0", nil)
 
 	if err != nil {
 		panic(err)
@@ -664,7 +664,7 @@ func TestDeleteUserSucceedsIfUserFound(t *testing.T) {
 	// Save the user to the database
 	config.DB.Create(&newUser)
 
-	relativeUrl := "/users/" + strconv.Itoa(int(newUser.ID))
+	relativeUrl := "/api/users/" + strconv.Itoa(int(newUser.ID))
 
 	req, err := http.NewRequest("DELETE", relativeUrl, nil)
 
