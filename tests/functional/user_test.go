@@ -373,9 +373,9 @@ func TestRegisterUserSucceedsIfEmailDoesNotExistAlready(t *testing.T) {
 	assert.Equal(t, newUser.Email, requestData.Email)
 
 	// Delete the newly created user
-	if err := config.DB.Delete(&newUser).Error; err != nil {
-		t.Fatalf("could not delete user: %v", err)
-	}
+	t.Cleanup(func() {
+		config.DB.Delete(&newUser)
+	})
 }
 
 func TestGetUsersSucceeds(t *testing.T) {
@@ -593,8 +593,15 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 		panic(err)
 	}
 
+	var userToUpdate models.User
+	userToUpdate.Firstname = "French"
+	userToUpdate.Lastname = "Toast"
+	userToUpdate.Email = "french.toast@test.com"
+	userToUpdate.SetPassword("myValidPassword")
+	config.DB.Create(&userToUpdate)
+
 	baseURL := "http://localhost:8080"
-	relativeURL := "/api/users/" + strconv.Itoa(int(testUser.ID))
+	relativeURL := "/api/users/" + strconv.Itoa(int(userToUpdate.ID))
 	fullURL := baseURL + relativeURL
 
 	req, err := http.NewRequest("PUT", fullURL, bytes.NewBuffer(jsonData))
@@ -620,6 +627,10 @@ func TestCanUpdateUserWithAllowedFields(t *testing.T) {
 
 	assert.Equal(t, updatedUser.Firstname, requestData.Firstname)
 	assert.Equal(t, updatedUser.Lastname, requestData.Lastname)
+
+	t.Cleanup(func() {
+		config.DB.Delete(&userToUpdate)
+	})
 }
 
 func TestDeleteUserRespondsWith404NotFoundIfUserNotFound(t *testing.T) {
@@ -675,4 +686,8 @@ func TestDeleteUserSucceedsIfUserFound(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, http.StatusNoContent, w.Code)
+
+	t.Cleanup(func() {
+		config.DB.Delete(&newUser)
+	})
 }

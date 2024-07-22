@@ -158,4 +158,8 @@ func TestLoginSucceedsWhenEmailAndPasswordMatch(t *testing.T) {
 	assert.NoError(t, err)
 
 	fmt.Printf("LoginToken %v\n", LoginToken)
+
+	t.Cleanup(func() {
+		config.DB.Delete(&newUser)
+	})
 }

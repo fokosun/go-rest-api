@@ -129,6 +129,22 @@ func TestExistingUserCanSuccessfullyCreateAuthor(t *testing.T) {
 
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusCreated, w.Code)
+
+	// Read the response body
+	bodyBytes, err := io.ReadAll(w.Result().Body)
+	assert.NoError(t, err)
+
+	// Print the response body for debugging purposes
+	fmt.Println(string(bodyBytes))
+
+	// Unmarshal the response body into a slice of users
+	var foundAuthor models.Author
+	err = json.Unmarshal(bodyBytes, &foundAuthor)
+	assert.NoError(t, err)
+
+	t.Cleanup(func() {
+		config.DB.Delete(&foundAuthor)
+	})
 }
 
 func TestGetAuthorsSucceeds(t *testing.T) {
@@ -196,8 +212,8 @@ func TestGetAuthorByIdRespondsWith200IfUserExists(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	var newAuthor models.Author
-	newAuthor.Firstname = "Frank"
-	newAuthor.Lastname = "Eisten"
+	newAuthor.Firstname = "Elmo"
+	newAuthor.Lastname = "Fenmo"
 
 	config.DB.Create(&newAuthor)
 
@@ -221,4 +237,8 @@ func TestGetAuthorByIdRespondsWith200IfUserExists(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, newAuthor.ID, foundAuthor.ID)
+
+	t.Cleanup(func() {
+		config.DB.Delete(&newAuthor)
+	})
 }

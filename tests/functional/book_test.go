@@ -17,10 +17,10 @@ import (
 )
 
 type CreateBookRequest struct {
-	Title     string `json:"title"`
-	Isbn      string `json:"isbn"`
-	CreatedBy uint
-	AuthorID  uint
+	Title    string `json:"title"`
+	Isbn     string `json:"isbn"`
+	UserID   uint
+	AuthorID uint
 }
 
 func TestGetBooksSucceeds(t *testing.T) {
@@ -91,8 +91,8 @@ func TestGetBookReturnsBookIfBookIDExists(t *testing.T) {
 	config.DB.Create(&newUser)
 
 	var newAuthor models.Author
-	newAuthor.Firstname = "Tiger"
-	newAuthor.Lastname = "Eisten"
+	newAuthor.Firstname = "New Author Firstname"
+	newAuthor.Lastname = "New Author Lastname"
 	newAuthor.CreatedBy = newUser.ID
 	config.DB.Create(&newAuthor)
 
@@ -129,6 +129,8 @@ func TestGetBookReturnsBookIfBookIDExists(t *testing.T) {
 
 	t.Cleanup(func() {
 		config.DB.Delete(&newUser)
+		config.DB.Delete(&newBook)
+		config.DB.Delete(&newAuthor)
 	})
 }
 
@@ -255,13 +257,10 @@ func TestCreateBookRequiresUserID(t *testing.T) {
 func TestCreateBookRequiresAuthorID(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	var lastUser models.User
-	config.DB.Last(&lastUser)
-
 	requestData := CreateBookRequest{
-		Title:     "Example Title",
-		Isbn:      "ISB-111-111-111",
-		CreatedBy: uint(lastUser.ID),
+		Title:  "Example Title",
+		Isbn:   "ISB-111-111-111",
+		UserID: uint(testUser.ID),
 	}
 
 	jsonData, err := json.Marshal(requestData)
@@ -299,20 +298,22 @@ func TestCreateBookRequiresAuthorID(t *testing.T) {
 func TestCreateBookRequiresAuthorIDToExist(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	var lastUser models.User
-	config.DB.Last(&lastUser)
+	var lastAuthorID uint
 
 	var lastAuthor models.Author
-	config.DB.Last(&lastAuthor)
+	if err := config.DB.Last(&lastAuthor).Error; err != nil {
+		lastAuthorID = testAuthor.ID + uint(1)
+	} else {
+		lastAuthorID = lastAuthor.ID + uint(1)
+	}
 
-	lastUserID := lastUser.ID
-	lastAuthorID := lastAuthor.ID + 1
+	fmt.Printf("Last Author ID: %v\n", lastAuthorID)
 
 	requestData := CreateBookRequest{
-		Title:     "Example Title",
-		Isbn:      "ISB-111-111-111",
-		CreatedBy: uint(lastUserID),
-		AuthorID:  uint(lastAuthorID),
+		Title:    "Example Title",
+		Isbn:     "ISB-111-111-111",
+		UserID:   uint(testUser.ID),
+		AuthorID: lastAuthorID,
 	}
 
 	jsonData, err := json.Marshal(requestData)
@@ -350,20 +351,18 @@ func TestCreateBookRequiresAuthorIDToExist(t *testing.T) {
 func TestCreateBookCanSuccessfullyCreateABookWhenNoErrors(t *testing.T) {
 	w := httptest.NewRecorder()
 
-	var lastUser models.User
-	config.DB.Last(&lastUser)
-
-	var lastAuthor models.Author
-	config.DB.Last(&lastAuthor)
-
-	lastUserID := lastUser.ID
-	lastAuthorID := lastAuthor.ID
+	var newUser models.User
+	newUser.Firstname = "triss"
+	newUser.Lastname = "blimiss"
+	newUser.Email = "triss.blimiss@test.com"
+	newUser.SetPassword("avalidPass")
+	config.DB.Create(&newUser)
 
 	requestData := CreateBookRequest{
-		Title:     "Example Title",
-		Isbn:      "ISB-111-111-111",
-		CreatedBy: uint(lastUserID),
-		AuthorID:  uint(lastAuthorID),
+		Title:    "Gonmmet Ditum",
+		Isbn:     "ISB-111-111-111",
+		UserID:   uint(newUser.ID),
+		AuthorID: uint(testAuthor.ID),
 	}
 
 	jsonData, err := json.Marshal(requestData)
@@ -397,6 +396,11 @@ func TestCreateBookCanSuccessfullyCreateABookWhenNoErrors(t *testing.T) {
 	assert.Equal(t, requestData.Title, foundBook.Title)
 	assert.Equal(t, requestData.Isbn, foundBook.Isbn)
 	assert.Equal(t, requestData.AuthorID, foundBook.Author.ID)
+
+	t.Cleanup(func() {
+		config.DB.Delete(&newUser)
+		config.DB.Delete(&foundBook)
+	})
 }
 
 func TestDeleteBookRespondsWith404NotFoundWhenGivenIDDoesNotExist(t *testing.T) {
@@ -448,7 +452,7 @@ func TestDeleteBookRespondsWith401UnauthorizedWhenUserUnauthorizedToDeleteBook(t
 	var newBook models.Book
 	newBook.Title = "Hansel Un Gretel2"
 	newBook.Isbn = "ISN-192-168-71-71"
-	newBook.CreatedBy = newUser.ID
+	newBook.UserID = newUser.ID
 	newBook.AuthorID = newAuthor.ID
 
 	config.DB.Create(&newBook)
@@ -481,6 +485,8 @@ func TestDeleteBookRespondsWith401UnauthorizedWhenUserUnauthorizedToDeleteBook(t
 
 	t.Cleanup(func() {
 		config.DB.Delete(&newUser)
+		config.DB.Delete(&newBook)
+		config.DB.Delete(&newAuthor)
 	})
 }
 
@@ -503,7 +509,7 @@ func TestDeleteBookSuccessfullyDeletesABookByID(t *testing.T) {
 	var newBook models.Book
 	newBook.Title = "Hansel Un Gretel2"
 	newBook.Isbn = "ISN-192-168-71-71"
-	newBook.CreatedBy = uint(testUser.ID)
+	newBook.UserID = uint(testUser.ID)
 	newBook.AuthorID = uint(newAuthor.ID)
 
 	config.DB.Create(&newBook)
@@ -536,5 +542,7 @@ func TestDeleteBookSuccessfullyDeletesABookByID(t *testing.T) {
 
 	t.Cleanup(func() {
 		config.DB.Delete(&newUser)
+		config.DB.Delete(&newBook)
+		config.DB.Delete(&newAuthor)
 	})
 }

@@ -48,7 +48,7 @@ func CreateBook(c *gin.Context) {
 		return
 	}
 
-	if book.CreatedBy == 0 {
+	if book.UserID == 0 {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "created_by is required"})
 		return
 	}
@@ -90,7 +90,7 @@ func DeleteBook(c *gin.Context) {
 		return
 	}
 
-	if user.ID != book.CreatedBy {
+	if user.ID != book.UserID {
 		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "You are not authorized to perform this action."})
 		return
 	}

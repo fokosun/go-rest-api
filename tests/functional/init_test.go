@@ -12,6 +12,8 @@ import (
 
 var router *gin.Engine
 var testUser models.User
+var testAuthor models.Author
+var testBook models.Book
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)
@@ -24,13 +26,28 @@ func TestMain(m *testing.M) {
 
 	config.ConnectDatabase()
 
-	testUser.Firstname = "test"
-	testUser.Lastname = "test"
+	testUser.Firstname = "Test User Firstname"
+	testUser.Lastname = "Test User Lastname"
 	testUser.Email = "test@example.com"
 	testUser.SetPassword("validpassword")
 
 	// Save the user to the database
 	config.DB.FirstOrCreate(&testUser)
+
+	testAuthor.Firstname = "Test Author Firstname"
+	testAuthor.Lastname = "Test Author lastname"
+	testAuthor.CreatedBy = testUser.ID
+
+	// Save the author to the database
+	config.DB.FirstOrCreate(&testAuthor)
+
+	testBook.Title = "Test Book title"
+	testBook.Isbn = "ISB-111-111-111"
+	testBook.UserID = testUser.ID
+	testBook.AuthorID = testAuthor.ID
+
+	// Save the author to the database
+	config.DB.FirstOrCreate(&testBook)
 
 	router = routes.SetupRouter()
 
@@ -39,6 +56,8 @@ func TestMain(m *testing.M) {
 
 	// Cleanup
 	config.DB.Delete(&testUser)
+	config.DB.Delete(&testBook)
+	config.DB.Delete(&testAuthor)
 
 	os.Exit(code)
 }
