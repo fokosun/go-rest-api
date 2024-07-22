@@ -21,6 +21,7 @@ func SetupRouter() *gin.Engine {
 
 	SetupApiRouter(router)
 	SetUpWebRouter(router)
+	SetUpWebhookRouter(router)
 
 	return router
 }
