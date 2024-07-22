@@ -35,6 +35,5 @@ func SetupApiRouter(router *gin.Engine) {
 		books.GET("/ratings", handlers.GetRatings)
 		books.GET("/:id/ratings", handlers.GetRatingsByBookID)
 		books.POST("/:id/ratings", handlers.CreateOrUpdateRating)
-		books.PUT("/:id/ratings", handlers.CreateOrUpdateRating)
 	}
 }

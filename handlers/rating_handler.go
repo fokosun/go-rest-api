@@ -14,15 +14,15 @@ func GetRatings(c *gin.Context) {
 	ratings := []models.Rating{}
 	config.DB.Find(&ratings)
 	c.JSON(http.StatusOK, ratings)
-
 }
 
 func GetRatingsByBookID(c *gin.Context) {
 	ratings := []models.Rating{}
 	if err := config.DB.Where("book_id = ?", c.Param("id")).Find(&ratings).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "There was an error processing this request. Please try again."})
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "Book does not exist"})
 		return
 	}
+
 	c.JSON(http.StatusOK, ratings)
 }
 
@@ -34,13 +34,6 @@ func CreateOrUpdateRating(c *gin.Context) {
 	bookID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "An unknown error occured. please try again."})
-		return
-	}
-
-	// Ensure the requesting user exists
-	userEmail := c.MustGet("email").(string)
-	if err := config.DB.Where("email = ?", userEmail).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "Session expired. Please login and try again."})
 		return
 	}
 
@@ -56,7 +49,6 @@ func CreateOrUpdateRating(c *gin.Context) {
 
 		// ensure the given book id exists
 		if err := config.DB.First(&book, bookID).Error; err != nil {
-			fmt.Println("Book not found")
 			c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 			return
 		}
@@ -75,7 +67,7 @@ func CreateOrUpdateRating(c *gin.Context) {
 
 		config.DB.Create(&rating)
 
-		c.JSON(http.StatusOK, rating)
+		c.JSON(http.StatusCreated, rating)
 
 		return
 	}

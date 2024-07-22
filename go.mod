@@ -3,6 +3,7 @@ module github.com/fokosun/go-rest-api
 go 1.21
 
 require (
+	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
