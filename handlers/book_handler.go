@@ -49,7 +49,7 @@ func CreateBook(c *gin.Context) {
 	}
 
 	if book.UserID == 0 {
-		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "created_by is required"})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "user_id is required"})
 		return
 	}
 

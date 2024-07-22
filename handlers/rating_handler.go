@@ -33,42 +33,43 @@ func CreateOrUpdateRating(c *gin.Context) {
 
 	bookID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid book ID"})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: "An unknown error occured. please try again."})
 		return
 	}
 
 	// Ensure the requesting user exists
 	userEmail := c.MustGet("email").(string)
 	if err := config.DB.Where("email = ?", userEmail).First(&user).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "There was a problem processing this request. Please try again."})
+		c.JSON(http.StatusUnauthorized, ErrorResponse{Message: "Session expired. Please login and try again."})
 		return
 	}
 
 	// If Rating dont exists create new
 	if err := config.DB.Where(&models.Rating{BookID: bookID, UserID: user.ID}).First(&rating).Error; err != nil {
-		fmt.Printf("Creating new Rating")
+		fmt.Println("Creating new Rating")
 
 		// Bind the JSON input to the struct
 		if err := c.ShouldBindJSON(&rating); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 			return
 		}
 
 		// ensure the given book id exists
 		if err := config.DB.First(&book, bookID).Error; err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Book not found"})
+			fmt.Println("Book not found")
+			c.JSON(http.StatusNotFound, ErrorResponse{Message: "Book not found"})
 			return
 		}
 
 		// set the book id from gin context
 		if err := rating.SetBookID(bookID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
 			return
 		}
 
 		// set the user id from gin context
 		if err := rating.SetUserID(user.ID); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusInternalServerError, ErrorResponse{Message: err.Error()})
 			return
 		}
 
@@ -79,13 +80,13 @@ func CreateOrUpdateRating(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Updating existing Rating %v\n", rating)
-
 	// Bind the JSON input to the struct
 	if err := c.ShouldBindJSON(&rating); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, ErrorResponse{Message: err.Error()})
 		return
 	}
+
+	fmt.Println("Updating existing Rating")
 
 	config.DB.Save(&rating)
 

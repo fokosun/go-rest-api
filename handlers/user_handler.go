@@ -1,24 +1,16 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/fokosun/go-rest-api/config"
 	"github.com/fokosun/go-rest-api/models"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func GetUsers(c *gin.Context) {
 	users := []models.User{}
 	config.DB.Find(&users)
-
-	config.DB.Preload("Book", func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID", "Title", "Isbn", "CreatedBy", "UpdatedBy", "CreatedAt", "UpdatedAt", "Author")
-	}).Find(&users)
-
-	fmt.Printf("Users Books: %v\n", users)
 
 	c.JSON(http.StatusOK, users)
 }
@@ -103,8 +95,6 @@ func UpdateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// ensure cascade on delete actually happens
-// and maybe do a force delete instead of soft?
 func DeleteUser(c *gin.Context) {
 	var user models.User
 	if err := config.DB.First(&user, c.Param("id")).Error; err != nil {

@@ -251,7 +251,7 @@ func TestCreateBookRequiresUserID(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Assert that the error message is as expected
-	assert.Equal(t, "created_by is required", errorResponse.Message)
+	assert.Equal(t, "user_id is required", errorResponse.Message)
 }
 
 func TestCreateBookRequiresAuthorID(t *testing.T) {

@@ -66,8 +66,17 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Ensure the requesting user exists
+		var user models.User
+		userEmail := claims.Email
+		if err := config.DB.Where("email = ?", userEmail).First(&user).Error; err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Session expired. Please login and try again"})
+			c.Abort()
+			return
+		}
+
 		// Token is valid, store user information in the context
-		c.Set("email", claims.Email)
+		c.Set("email", userEmail)
 		c.Next()
 	}
 }
