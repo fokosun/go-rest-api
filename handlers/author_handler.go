@@ -21,7 +21,7 @@ func CreateAuthor(c *gin.Context) {
 	// Validate the Author
 	err := author.Validate()
 	if err != nil {
-		c.JSON(http.StatusNotFound, ValidationErrorResponse{ValidationErrorMessage: err.Error()})
+		c.JSON(http.StatusBadRequest, ValidationErrorResponse{ValidationErrorMessage: err.Error()})
 		return
 	}
 

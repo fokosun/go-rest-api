@@ -22,7 +22,7 @@ type CreateAuthorRequest struct {
 	Gravatar  string `json:"gravatar"`
 }
 
-func TestAuthorFirstnameIsRequiredExpect404Badrequest(t *testing.T) {
+func TestAuthorFirstnameIsRequiredExpect400Badrequest(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	requestData := RegisterRequest{
@@ -45,7 +45,7 @@ func TestAuthorFirstnameIsRequiredExpect404Badrequest(t *testing.T) {
 	}
 
 	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
 	// Read the response body
 	bodyBytes, err := io.ReadAll(w.Result().Body)
@@ -63,7 +63,7 @@ func TestAuthorFirstnameIsRequiredExpect404Badrequest(t *testing.T) {
 	assert.Equal(t, "Key: 'Author.Firstname' Error:Field validation for 'Firstname' failed on the 'required' tag", errorResponse.Message)
 }
 
-func TestAuthorLastnameIsRequiredExpect404Badrequest(t *testing.T) {
+func TestAuthorLastnameIsRequiredExpect400Badrequest(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	requestData := RegisterRequest{
@@ -86,7 +86,7 @@ func TestAuthorLastnameIsRequiredExpect404Badrequest(t *testing.T) {
 	}
 
 	router.ServeHTTP(w, req)
-	assert.Equal(t, http.StatusNotFound, w.Code)
+	assert.Equal(t, http.StatusBadRequest, w.Code)
 
 	// Read the response body
 	bodyBytes, err := io.ReadAll(w.Result().Body)
